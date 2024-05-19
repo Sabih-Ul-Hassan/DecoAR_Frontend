@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "750597701177",
+    "project_id": "decoar-bc983",
+    "storage_bucket": "decoar-bc983.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750597701177:android:9d18fbafd11748f8ea57e8",
+        "android_client_info": {
+          "package_name": "com.example.decoar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgztRF-b4z6vRssLZR3qM9UubcFhGBkXc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

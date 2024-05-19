@@ -1,0 +1,13 @@
+# Flutter/Dart specific files
+.idea/
+.vscode/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+ios/Pods/
+android/build/
+android/gradlew
+android/gradlew.bat
+.dart_tool/
+.packages
+pubspec.lock
