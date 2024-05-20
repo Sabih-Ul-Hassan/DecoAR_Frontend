@@ -1,16 +1,62 @@
+import 'dart:convert';
 import 'package:decoar/Classes/User.dart';
 import 'package:decoar/Providers/User.dart';
 import 'package:decoar/varsiables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
-class UserProfileScreen extends StatelessWidget {
+class UserProfileScreen extends StatefulWidget {
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  List<dynamic> transactions = [];
+  bool isLoading = false;
+  late String userId;
+  late User userobj;
+  late var user;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    userId = Provider.of<UserProvider>(context).user!.userId;
+    user = Provider.of<UserProvider>(context).user!.user;
+    userobj = Provider.of<UserProvider>(context).user!;
+    fetchTransactions();
+  }
+
+  Future<void> fetchTransactions() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await http
+        .get(Uri.parse('${url}user/payments/6579faaed78422273b2f161d'));
+    print(json.decode(response.body));
+    if (response.statusCode == 200) {
+      setState(() {
+        transactions = json.decode(response.body);
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      throw Exception('Failed to load transactions');
+    }
+  }
+
+  Future<void> _refresh() async {
+    await fetchTransactions();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userId = Provider.of<UserProvider>(context).user!.userId;
-    final user = Provider.of<UserProvider>(context).user!.user;
-    User userobj = Provider.of<UserProvider>(context).user!;
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
@@ -56,35 +102,115 @@ class UserProfileScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                // if (!Hive.isBoxOpen('sheet_filter_criteria'))
-                //   await Hive.openBox('sheet_filter_criteria');
-                // if (!Hive.isBoxOpen('_timeFilterBox'))
-                //   await Hive.openBox('_timeFilterBox');
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // if (!Hive.isBoxOpen('sheet_filter_criteria'))
+                      //   await Hive.openBox('sheet_filter_criteria');
+                      // if (!Hive.isBoxOpen('_timeFilterBox'))
+                      //   await Hive.openBox('_timeFilterBox');
 
-                Provider.of<UserProvider>(context, listen: false)
-                    .user!
-                    .userType = userobj.userType == "user" ? "seller" : "user";
-                Navigator.of(context).pushReplacementNamed(
-                    userobj.userType == "user" ? "/userHome" : "/sellerHome");
-                Hive.box("user").put(
-                    'user',
-                    Provider.of<UserProvider>(context, listen: false)
-                        .user!
-                        .toString());
-              },
-              child: Text(
-                  'Switch to ${userobj.userType == "user" ? "Seller" : "Customer"}'),
+                      Provider.of<UserProvider>(context, listen: false)
+                              .user!
+                              .userType =
+                          userobj.userType == "user" ? "seller" : "user";
+                      Navigator.of(context).pushReplacementNamed(
+                          userobj.userType == "user"
+                              ? "/userHome"
+                              : "/sellerHome");
+                      Hive.box("user").put(
+                          'user',
+                          Provider.of<UserProvider>(context, listen: false)
+                              .user!
+                              .toString());
+                    },
+                    child: Text(
+                        'Switch - ${userobj.userType == "user" ? "Seller" : "Customer"}'),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (!Hive.isBoxOpen("user")) Hive.openBox("user");
+                        Provider.of<UserProvider>(context, listen: false).user =
+                            null;
+                        Navigator.of(context).pushReplacementNamed("/login");
+                        Hive.box("user").clear();
+                      },
+                      child: Text('Logout'),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () async {
-                if (!Hive.isBoxOpen("user")) Hive.openBox("user");
-                Provider.of<UserProvider>(context, listen: false).user = null;
-                Navigator.of(context).pushReplacementNamed("/login");
-                Hive.box("user").clear();
-              },
-              child: Text('Logout'),
+            Divider(thickness: 0.5),
+            const Center(
+                child: Text("Transactions",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+            Divider(thickness: 0.5),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : ListView.builder(
+                        itemCount: transactions.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final transaction = transactions[index];
+                          final bool isReceiving =
+                              transaction['transactionType'] == 'receiving';
+
+                          return Container(
+                            margin: EdgeInsets.symmetric(vertical: 8.0),
+                            padding: EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '\$${transaction['amount']}',
+                                  style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 8.0),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      DateFormat.yMd().add_jm().format(
+                                          DateTime.parse(
+                                              transaction["dateTime"])),
+                                      style: TextStyle(fontSize: 14.0),
+                                    ),
+                                    Icon(
+                                      isReceiving
+                                          ? Icons.arrow_circle_down
+                                          : Icons.arrow_circle_up,
+                                      color: isReceiving
+                                          ? Colors.green
+                                          : Colors.red,
+                                      size: 32.0,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
             ),
           ],
         ),

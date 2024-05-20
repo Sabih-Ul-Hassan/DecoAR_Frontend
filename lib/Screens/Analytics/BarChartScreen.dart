@@ -21,7 +21,7 @@ class _BarChartFromApiState extends State<BarChartFromApi> {
   @override
   void initState() {
     super.initState();
-    _selectedValue = 'allTime';
+    _selectedValue = 'thisYear';
   }
 
   @override
@@ -81,20 +81,23 @@ class _BarChartFromApiState extends State<BarChartFromApi> {
                   final orders = snapshot.data![1];
                   final cancelled = snapshot.data![2];
                   var maxYValue;
-                  if (apiData.isNotEmpty)
+                  if (apiData.isNotEmpty) {
                     maxYValue = apiData
                         .map((e) => double.parse(e["value"].toString()))
                         .reduce((a, b) => a > b ? a : b);
+                  }
                   var maxYValue1;
-                  if (orders.isNotEmpty)
+                  if (orders.isNotEmpty) {
                     maxYValue1 = orders
                         .map((e) => double.parse(e["value"].toString()))
                         .reduce((a, b) => a > b ? a : b);
+                  }
                   var maxYValue2;
-                  if (cancelled.isNotEmpty)
+                  if (cancelled.isNotEmpty) {
                     maxYValue2 = cancelled
                         .map((e) => double.parse(e["value"].toString()))
                         .reduce((a, b) => a > b ? a : b);
+                  }
                   final totalBarWidth = apiData.length * (barWidth + spacing);
                   final chartWidth = totalBarWidth + extraPadding;
                   final totalBarWidth1 = orders.length * (barWidth + spacing);
@@ -109,10 +112,10 @@ class _BarChartFromApiState extends State<BarChartFromApi> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
                             child: Text("Revenue Chart",
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                           ),
                           apiData.isNotEmpty
@@ -180,11 +183,11 @@ class _BarChartFromApiState extends State<BarChartFromApi> {
                                     ),
                                   ),
                                 )
-                              : Center(child: Text("No data")),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
+                              : const Center(child: Text("No data")),
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
                             child: Text("Total Orders Chart",
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                           ),
                           orders.isNotEmpty
@@ -252,11 +255,11 @@ class _BarChartFromApiState extends State<BarChartFromApi> {
                                     ),
                                   ),
                                 )
-                              : Center(child: Text("No data")),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
+                              : const Center(child: Text("No data")),
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
                             child: Text("Cancelled Orders Chart",
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                           ),
                           cancelled.isNotEmpty
