@@ -72,3 +72,49 @@ Future<List<Map<String, dynamic>>> loadFilterAnalyticsData(userId) async {
     return [];
   }
 }
+
+Future<List<Map<String, dynamic>>> fetchDataRevenueChart(
+    String value, String userId) async {
+  final response = await http
+      .get(Uri.parse(url + 'analytics/graph/earnings/$userId/$value'));
+  if (response.statusCode == 200) {
+    print(List<Map<String, dynamic>>.from(jsonDecode(response.body)));
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  } else {
+    throw Exception('Failed to load data');
+  }
+}
+
+Future<List<Map<String, dynamic>>> fetchDataCancelledChart(
+    String value, String userId) async {
+  final response = await http
+      .get(Uri.parse(url + 'analytics/graph/cancelled/$userId/$value'));
+  if (response.statusCode == 200) {
+    print(List<Map<String, dynamic>>.from(jsonDecode(response.body)));
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  } else {
+    throw Exception('Failed to load data');
+  }
+}
+
+Future<List<Map<String, dynamic>>> fetchDataOrdersChart(
+    String value, String userId) async {
+  final response =
+      await http.get(Uri.parse(url + 'analytics/graph/count/$userId/$value'));
+  if (response.statusCode == 200) {
+    print(List<Map<String, dynamic>>.from(jsonDecode(response.body)));
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  } else {
+    throw Exception('Failed to load data');
+  }
+}
+
+Future<List<List<Map<String, dynamic>>>> getCharts(
+    String value, String userId) async {
+  List<List<Map<String, dynamic>>> l1 = [
+    await fetchDataRevenueChart(value, userId),
+    await fetchDataOrdersChart(value, userId),
+    await fetchDataCancelledChart(value, userId)
+  ];
+  return l1;
+}

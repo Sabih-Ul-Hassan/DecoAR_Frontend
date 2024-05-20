@@ -35,6 +35,8 @@ class _MyRegisterState extends State<MyRegister> {
       } else {
         Map<String, dynamic> u = json.decode(res['data']);
         print(u["_id"]);
+
+        if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
         Box userBox = Hive.box("user");
 
         User user = User(userId: u["_id"], userType: "user", user: u);

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:decoar/APICalls/Analytics.dart';
+import 'package:decoar/Screens/Analytics/BarChartScreen.dart';
 import 'package:decoar/Screens/Analytics/ExcelView.dart';
 import 'package:decoar/Screens/Analytics/FilterSheetForm.dart';
 import 'package:flutter/material.dart';
@@ -42,11 +43,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       Hive.openBox('sheet_filter_criteria');
     if (!Hive.isBoxOpen('_timeFilterBox')) Hive.openBox('_timeFilterBox');
     return Scaffold(
-      body: Analytics(),
+      body: !graphs ? Analytics() : BarChartFromApi(),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          graphs = !graphs;
+          setState(() {
+            graphs = !graphs;
+          });
         },
         child: Icon(Icons.bar_chart_outlined),
       ),
