@@ -1,7 +1,36 @@
+import 'dart:convert';
+
 import 'package:decoar/NotificationsServices/NotificationsServices.dart';
 import 'package:decoar/varsiables.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+Future<bool> logout(String id) async {
+  final String apiUrl = url + 'user/logout';
+
+  final Map<String, dynamic> requestBody = {
+    'id': id,
+  };
+
+  try {
+    final http.Response response = await http.post(
+      Uri.parse(apiUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(requestBody),
+    );
+
+    if (response.statusCode == 200) {
+      final bool success = jsonDecode(response.body);
+      return success;
+    } else {
+      throw Exception('Failed to logout: ${response.statusCode}');
+    }
+  } catch (error) {
+    throw Exception('Failed to logout: $error');
+  }
+}
 
 Future<Map<String, dynamic>> login(String email, String password) async {
   String fcmTokken = await NotificationsServices.getDeviceToken();

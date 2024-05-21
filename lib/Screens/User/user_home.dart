@@ -3,6 +3,7 @@ import 'package:decoar/Screens/Cart/cart_screen.dart';
 import 'package:decoar/Screens/Chat/chat_screen.dart';
 import 'package:decoar/Screens/Notifications/notifications_screen.dart';
 import 'package:decoar/Screens/Recycke/search_screen.dart';
+import 'package:decoar/Screens/Recycke/searched_user.dart';
 import 'package:decoar/Screens/SearchScreen/search_suggestion_screen.dart';
 import 'package:decoar/Screens/ShowProduct/show_product.dart';
 import 'package:decoar/Screens/User/UserProfileScreen.dart';
@@ -151,6 +152,10 @@ class Search extends StatelessWidget {
               query = "none";
             return MaterialPageRoute(
                 builder: (_) => SearchScreen(query: query));
+          case '/searchedUser':
+            String userId = settings.arguments as String;
+            return MaterialPageRoute(
+                builder: (_) => SearchedUser(userId: userId));
           case '/searchSuggestionScreen':
             return PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) {
@@ -160,38 +165,6 @@ class Search extends StatelessWidget {
             );
         }
       },
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  final TextEditingController _textEditingController = TextEditingController();
-
-  ProfilePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _textEditingController,
-              decoration: InputDecoration(
-                labelText: 'Enter some text',
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                print(_textEditingController.text);
-              },
-              child: Text('Print Text'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

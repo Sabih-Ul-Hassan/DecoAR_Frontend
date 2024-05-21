@@ -1,5 +1,6 @@
 import 'package:decoar/APICalls/search.dart';
 import 'package:decoar/Screens/InventryItems/item_card.dart';
+import 'package:decoar/Screens/Recycke/search_users.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -16,6 +17,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  bool items = true;
   late Future<List<dynamic>> _productsFuture;
   TextEditingController search = TextEditingController();
   bool _isactionButtonVisible = true;
@@ -33,6 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
     _scrollController = ScrollController();
     _tempFilterBox = Hive.box('temp_filter');
     _scrollController.addListener(_scrollListener);
+    search.text = widget.query;
   }
 
   void dispose() {
@@ -59,35 +62,53 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Search Results"),
+        title: Text("Search ${items ? "Items" : "Users"}"),
       ),
-      body: Stack(
-        children: [
-          ProductsList(
-              scrollController: _scrollController,
-              productsFuture: _productsFuture),
-          IgnorePointer(
-            ignoring: !_isfilterVisibile,
-            child: AnimatedOpacity(
-              opacity: _isfilterVisibile ? 1.0 : 0.0,
-              duration: Duration(milliseconds: 500),
-              child: FilterForm(reload: reload, query: widget.query),
+      body: !items
+          ? SearchUsers()
+          : Stack(
+              children: [
+                ProductsList(
+                    scrollController: _scrollController,
+                    productsFuture: _productsFuture),
+                IgnorePointer(
+                  ignoring: !_isfilterVisibile,
+                  child: AnimatedOpacity(
+                    opacity: _isfilterVisibile ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 500),
+                    child: FilterForm(reload: reload, query: widget.query),
+                  ),
+                )
+              ],
             ),
-          )
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (items)
+            AnimatedOpacity(
+              opacity: _isactionButtonVisible ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 500),
+              child: FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    _isfilterVisibile = !_isfilterVisibile;
+                  });
+                },
+                child: Icon(Icons.filter_alt_rounded),
+              ),
+            ),
+          FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  items = !items;
+                });
+              },
+              child: Icon(items
+                  ? Icons.person_search_rounded
+                  : Icons.image_search_sharp))
         ],
       ),
-      floatingActionButton: AnimatedOpacity(
-        opacity: _isactionButtonVisible ? 1.0 : 0.0,
-        duration: Duration(milliseconds: 500),
-        child: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _isfilterVisibile = !_isfilterVisibile;
-            });
-          },
-          child: Icon(Icons.filter_alt_rounded),
-        ),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
@@ -140,7 +161,6 @@ class _FilterFormState extends State<FilterForm> {
 
   @override
   void dispose() {
-    _filterBox.close();
     super.dispose();
   }
 

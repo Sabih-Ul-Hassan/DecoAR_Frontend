@@ -212,9 +212,8 @@ class _DraggableProdcutDetailsState extends State<DraggableProdcutDetails> {
                   const SizedBox(
                     height: 25,
                   ),
-                  TextButton(
+                  ElevatedButton(
                     onPressed: () {
-                      // Open Reviews BottomSheet
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,

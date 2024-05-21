@@ -21,7 +21,7 @@ class _SearchScreenState extends State<SearchSuggestionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ara"),
+        title: Text("Search"),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
@@ -31,7 +31,7 @@ class _SearchScreenState extends State<SearchSuggestionScreen> {
               height: 45,
               child: TextField(
                 controller: _searchController,
-                autofocus: true,
+                autofocus: false,
                 decoration: InputDecoration(
                   filled: true,
                   prefixIcon: Icon(Icons.search),
@@ -69,11 +69,10 @@ class _SearchScreenState extends State<SearchSuggestionScreen> {
                           style: ListTileStyle.drawer,
                           title: Text(title),
                           onTap: () {
-                            // Set selected suggestion and call API to get details
                             setState(() {
                               selectedSuggestion = title;
+                              this._searchController.text = title;
                             });
-                            //fetchDetails(selectedSuggestion);
                           },
                         )))
                     .toList(),

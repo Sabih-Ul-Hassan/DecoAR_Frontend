@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:decoar/APICalls/Auth.dart';
 import 'package:decoar/Classes/User.dart';
 import 'package:decoar/Providers/User.dart';
 import 'package:decoar/varsiables.dart';
@@ -27,16 +28,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     userId = Provider.of<UserProvider>(context).user!.userId;
     user = Provider.of<UserProvider>(context).user!.user;
     userobj = Provider.of<UserProvider>(context).user!;
-    fetchTransactions();
+    fetchTransactions(userId);
   }
 
-  Future<void> fetchTransactions() async {
+  Future<void> fetchTransactions(String userId) async {
     setState(() {
       isLoading = true;
     });
 
-    final response = await http
-        .get(Uri.parse('${url}user/payments/6579faaed78422273b2f161d'));
+    final response = await http.get(Uri.parse('${url}user/payments/$userId'));
     print(json.decode(response.body));
     if (response.statusCode == 200) {
       setState(() {
@@ -52,7 +52,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> _refresh() async {
-    await fetchTransactions();
+    await fetchTransactions(userId);
   }
 
   @override
@@ -107,11 +107,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      // if (!Hive.isBoxOpen('sheet_filter_criteria'))
-                      //   await Hive.openBox('sheet_filter_criteria');
-                      // if (!Hive.isBoxOpen('_timeFilterBox'))
-                      //   await Hive.openBox('_timeFilterBox');
-
                       Provider.of<UserProvider>(context, listen: false)
                               .user!
                               .userType =
@@ -135,9 +130,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (!Hive.isBoxOpen("user")) Hive.openBox("user");
+                        logout(Provider.of<UserProvider>(context, listen: false)
+                            .user!
+                            .userId);
+                        if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
                         Provider.of<UserProvider>(context, listen: false).user =
                             null;
+
                         Navigator.of(context).pushReplacementNamed("/login");
                         Hive.box("user").clear();
                       },
