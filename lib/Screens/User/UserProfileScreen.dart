@@ -38,7 +38,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
 
     final response = await http.get(Uri.parse('${url}user/payments/$userId'));
-    print(json.decode(response.body));
     if (response.statusCode == 200) {
       setState(() {
         transactions = json.decode(response.body);

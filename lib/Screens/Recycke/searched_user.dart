@@ -61,7 +61,7 @@ class _SearchedUserState extends State<SearchedUser> {
           } else {
             final user = snapshot.data!;
             final avg = user['averageRating'];
-            print(user);
+            final deleted = user['deleted'] ?? false;
             return Padding(
               padding: const EdgeInsets.all(5.0),
               child: Column(
@@ -110,6 +110,12 @@ class _SearchedUserState extends State<SearchedUser> {
                                     : Colors.grey,
                               ))
                     ]),
+                    if (deleted)
+                      const Text("Deleted",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.red)),
                     SizedBox(height: 20),
                     SizedBox(
                         width: double.infinity,
@@ -121,30 +127,71 @@ class _SearchedUserState extends State<SearchedUser> {
                                 "otheruser": widget.userId
                               });
                             },
-                            child: Text("chat"))),
-                    ElevatedButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (BuildContext context) {
-                            return Container(
-                                constraints: BoxConstraints(
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height * 0.9,
-                                ),
-                                child: UserReviewsBottomSheet(
-                                    userId: widget.userId));
-                          },
-                        );
-                      },
-                      child: Text('Reviews'),
+                            child: Text("Chat"))),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return Container(
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(context).size.height *
+                                            0.9,
+                                  ),
+                                  child: UserReviewsBottomSheet(
+                                      userId: widget.userId));
+                            },
+                          );
+                        },
+                        child: Text('Reviews'),
+                      ),
                     ),
+                    if (Provider.of<UserProvider>(context).user!.userType ==
+                            "admin" &&
+                        !deleted)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await deleteUserById(widget.userId);
+                            final scaffold = ScaffoldMessenger.of(context);
+
+                            scaffold.showSnackBar(
+                              const SnackBar(
+                                content: Text('User deleted'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          child: Text('Delete'),
+                        ),
+                      ),
                   ]),
             );
           }
         },
       ),
     );
+  }
+}
+
+Future<bool> deleteUserById(String UserId) async {
+  final apiUrl = url + 'admin/user/' + UserId;
+
+  try {
+    final response = await http.delete(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
   }
 }

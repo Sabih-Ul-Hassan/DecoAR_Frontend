@@ -291,7 +291,20 @@ class _DraggableProdcutDetailsState extends State<DraggableProdcutDetails> {
                         ),
                       ],
                     ),
-                  )
+                  ),
+                  if (userType != "seller")
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true)
+                                .pushNamed('/chatScreen', arguments: {
+                              "user": userId,
+                              "otheruser": widget.item["userId"]
+                            });
+                          },
+                          child: Text("Chat")),
+                    ),
                 ],
               ),
             ));

@@ -7,6 +7,7 @@ import 'package:decoar/Screens/Analytics/ExcelView.dart';
 import 'package:decoar/Screens/Chat/chat_screen.dart';
 import 'package:decoar/Screens/Profiling/login.dart';
 import 'package:decoar/Screens/Profiling/signup.dart';
+import 'package:decoar/Screens/Recycke/searched_user.dart';
 import 'package:decoar/Screens/Seller/seller_home.dart';
 import 'package:decoar/Screens/ShowProduct/show_product.dart';
 import 'package:decoar/Screens/User/user_home.dart';
@@ -135,6 +136,11 @@ class _MyProviderAppState extends State<MyProviderApp> {
               return MaterialPageRoute(builder: (_) => MyRegister());
             case '/login':
               return MaterialPageRoute(builder: (_) => MyLogin());
+            case '/searchedUserAdmin':
+              String id;
+              id = settings.arguments as String;
+              return MaterialPageRoute(
+                  builder: (_) => SearchedUser(userId: id));
             case '/chatScreen':
               {
                 final Map<String, dynamic>? arguments =

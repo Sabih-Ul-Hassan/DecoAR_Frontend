@@ -45,9 +45,7 @@ class _SearchUsersState extends State<SearchUsers> {
                 setState(() {
                   _isLoading = true;
                 });
-                print("a");
                 _data = await _fetchData(text);
-                print("b");
                 setState(() {
                   _isLoading = false;
                 });

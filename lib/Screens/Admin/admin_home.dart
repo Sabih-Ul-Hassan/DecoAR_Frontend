@@ -1,5 +1,6 @@
 import "package:decoar/Providers/User.dart";
 import "package:decoar/Screens/Admin/all_items.dart";
+import "package:decoar/Screens/Admin/all_users.dart";
 import "package:decoar/Screens/Recycke/search_screen.dart";
 import "package:decoar/Screens/Recycke/searched_user.dart";
 import "package:decoar/Screens/SearchScreen/search_suggestion_screen.dart";
@@ -42,7 +43,7 @@ class _AdminHomeState extends State<AdminHome> {
         index: _currentIndex,
         children: [
           AllItems(),
-          SizedBox(),
+          AllUsers(),
           Search(),
           SizedBox(),
           UserProfileScreen()

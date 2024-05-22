@@ -38,7 +38,6 @@ class _AllItemsState extends State<AllItems> {
                 return Center(child: Text('No items found'));
               } else {
                 List<Map<String, dynamic>> items = snapshot.data!;
-                print(items);
                 return GridView.builder(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
