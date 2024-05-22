@@ -3,6 +3,7 @@ import 'package:decoar/APICalls/Auth.dart';
 import 'package:decoar/Classes/User.dart';
 import 'package:decoar/Providers/User.dart';
 import 'package:decoar/varsiables.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
@@ -57,6 +58,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isAdmin = user['admin'] ?? false;
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
@@ -102,49 +104,68 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Provider.of<UserProvider>(context, listen: false)
-                              .user!
-                              .userType =
-                          userobj.userType == "user" ? "seller" : "user";
-                      Navigator.of(context).pushReplacementNamed(
-                          userobj.userType == "user"
-                              ? "/userHome"
-                              : "/sellerHome");
-                      Hive.box("user").put(
-                          'user',
-                          Provider.of<UserProvider>(context, listen: false)
-                              .user!
-                              .toString());
-                    },
-                    child: Text(
-                        'Switch - ${userobj.userType == "user" ? "Seller" : "Customer"}'),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        logout(Provider.of<UserProvider>(context, listen: false)
+            if (userobj.userType != "admin")
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Provider.of<UserProvider>(context, listen: false)
                             .user!
-                            .userId);
-                        if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
-                        Provider.of<UserProvider>(context, listen: false).user =
-                            null;
-
-                        Navigator.of(context).pushReplacementNamed("/login");
-                        Hive.box("user").clear();
-                      },
-                      child: Text('Logout'),
-                    ),
-                  ),
+                            .userType =
+                        userobj.userType == "user" ? "seller" : "user";
+                    Navigator.of(context).pushReplacementNamed(
+                        userobj.userType == "user"
+                            ? "/userHome"
+                            : "/sellerHome");
+                    Hive.box("user").put(
+                        'user',
+                        Provider.of<UserProvider>(context, listen: false)
+                            .user!
+                            .toString());
+                  },
+                  child: Text(
+                      'Switch - ${userobj.userType == "user" ? "Seller" : "Customer"}'),
                 ),
-              ],
+              ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  Provider.of<UserProvider>(context, listen: false)
+                          .user!
+                          .userType =
+                      userobj.userType == "admin" ? "user" : "admin";
+                  Navigator.of(context).pushReplacementNamed(
+                      userobj.userType == "user" ? "/userHome" : "/adminHome");
+                  Hive.box("user").put(
+                      'user',
+                      Provider.of<UserProvider>(context, listen: false)
+                          .user!
+                          .toString());
+                },
+                child: Text(
+                    'Switch - ${userobj.userType == "admin" ? "User" : "Admin"}'),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    logout(Provider.of<UserProvider>(context, listen: false)
+                        .user!
+                        .userId);
+                    if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
+                    Provider.of<UserProvider>(context, listen: false).user =
+                        null;
+
+                    Navigator.of(context).pushReplacementNamed("/login");
+                    Hive.box("user").clear();
+                  },
+                  child: Text('Logout'),
+                ),
+              ),
             ),
             Divider(thickness: 0.5),
             const Center(

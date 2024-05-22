@@ -2,6 +2,7 @@ import 'package:decoar/Classes/User.dart';
 import 'package:decoar/Providers/ChatProvider.dart';
 import 'package:decoar/Providers/NotificationProvider.dart';
 import 'package:decoar/Providers/User.dart';
+import 'package:decoar/Screens/Admin/admin_home.dart';
 import 'package:decoar/Screens/Analytics/ExcelView.dart';
 import 'package:decoar/Screens/Chat/chat_screen.dart';
 import 'package:decoar/Screens/Profiling/login.dart';
@@ -121,11 +122,13 @@ class _MyProviderAppState extends State<MyProviderApp> {
                 ? '/userHome'
                 : widget.user?.userType == 'seller'
                     ? '/sellerHome'
-                    : '/admin',
+                    : '/adminHome',
         onGenerateRoute: (settings) {
           switch (settings.name) {
             case '/userHome':
               return MaterialPageRoute(builder: (_) => UserHome());
+            case '/adminHome':
+              return MaterialPageRoute(builder: (_) => AdminHome());
             case '/sellerHome':
               return MaterialPageRoute(builder: (_) => SellerHome());
             case '/register':

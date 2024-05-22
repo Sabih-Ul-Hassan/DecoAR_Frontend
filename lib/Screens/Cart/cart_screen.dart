@@ -114,7 +114,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   void dispose() {
-    Hive.close(); // Close the Hive box when the screen is disposed
     updateNotifier.dispose(); // Dispose the update notifier
     super.dispose();
   }

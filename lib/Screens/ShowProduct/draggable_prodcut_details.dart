@@ -6,6 +6,7 @@ import 'package:decoar/Screens/ShowProduct/tags.dart';
 import 'package:decoar/Screens/WishLits/AddToList.dart';
 import 'package:decoar/varsiables.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image/image.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -60,6 +61,7 @@ class _DraggableProdcutDetailsState extends State<DraggableProdcutDetails> {
 
   @override
   Widget build(BuildContext context) {
+    bool deleted = widget.item['deleted'] ?? false;
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       maxChildSize: 0.9,
@@ -88,43 +90,53 @@ class _DraggableProdcutDetailsState extends State<DraggableProdcutDetails> {
                       const Divider(
                         height: 30,
                       ),
-                      Row(children: [
-                        IconButton(
-                          icon: Icon(Icons.shopping_cart),
-                          onPressed: () async {
-                            bool exists = await checkIfItemExistsInCart(
-                                userId!, widget.item["_id"]);
-                            if (exists) {
-                              const snackBar = SnackBar(
-                                content: Text('Item already exists in cart.'),
-                                duration: Duration(seconds: 1),
-                              );
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(snackBar);
-                            } else {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AddItemBottomSheet(
-                                    availability: widget.item['availability'],
-                                    item: widget.item,
-                                    userId: userId!,
-                                    price: widget.item['price'] is int
-                                        ? widget.item['price']
-                                        : int.parse(widget.item['price']),
-                                  );
+                      userType == "user"
+                          ? Row(children: [
+                              IconButton(
+                                icon: Icon(Icons.shopping_cart),
+                                onPressed: () async {
+                                  bool exists = await checkIfItemExistsInCart(
+                                      userId!, widget.item["_id"]);
+                                  if (exists) {
+                                    const snackBar = SnackBar(
+                                      content:
+                                          Text('Item already exists in cart.'),
+                                      duration: Duration(seconds: 1),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(snackBar);
+                                  } else {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AddItemBottomSheet(
+                                          availability:
+                                              widget.item['availability'],
+                                          item: widget.item,
+                                          userId: userId!,
+                                          price: widget.item['price'] is int
+                                              ? widget.item['price']
+                                              : int.parse(widget.item['price']),
+                                        );
+                                      },
+                                    );
+                                  }
                                 },
-                              );
-                            }
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.favorite_border),
-                          onPressed: () {
-                            _showWishlistBottomSheet(context);
-                          },
-                        )
-                      ])
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.favorite_border),
+                                onPressed: () {
+                                  _showWishlistBottomSheet(context);
+                                },
+                              )
+                            ])
+                          : Text(
+                              deleted ? "Items Deleted" : "",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Colors.red),
+                            )
                     ],
                   ),
                   const Divider(
@@ -212,62 +224,71 @@ class _DraggableProdcutDetailsState extends State<DraggableProdcutDetails> {
                   const SizedBox(
                     height: 25,
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return Container(
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).size.height * 0.9,
-                              ),
-                              child: ReviewsBottomSheet(item: widget.item));
-                        },
-                      );
-                    },
-                    child: Text('${widget.item['reviews']} Reviews'),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return Container(
+                                constraints: BoxConstraints(
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.9,
+                                ),
+                                child: ReviewsBottomSheet(item: widget.item));
+                          },
+                        );
+                      },
+                      child: Text('${widget.item['reviews']} Reviews'),
+                    ),
                   ),
                   Visibility(
                     visible: userType != 'user',
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        ElevatedButton(
-                          onPressed: () async {
-                            await Navigator.pushNamed(context, '/updateProduct',
-                                arguments: widget.item);
-                            Navigator.pop(context, true);
-                          },
-                          child: Text('Update'),
+                        if (userType != "admin")
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                await Navigator.pushNamed(
+                                    context, '/updateProduct',
+                                    arguments: widget.item);
+                                Navigator.pop(context, true);
+                              },
+                              child: Text('Update'),
+                            ),
+                          ),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              bool result = await widget.delete(
+                                  context, widget.item['_id']);
+                              final scaffold = ScaffoldMessenger.of(context);
+                              if (result) {
+                                scaffold.showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Product deleted successfully!'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                Navigator.pop(context, true);
+                              } else {
+                                scaffold.showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Failed to delete product. Please try again.'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Text('Delete'),
+                          ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            bool result = await widget.delete(
-                                context, widget.item['_id']);
-                            final scaffold = ScaffoldMessenger.of(context);
-                            if (result) {
-                              scaffold.showSnackBar(
-                                const SnackBar(
-                                  content:
-                                      Text('Product deleted successfully!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              Navigator.pop(context, true);
-                            } else {
-                              scaffold.showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Failed to delete product. Please try again.'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
-                          child: Text('Delete'),
-                        )
                       ],
                     ),
                   )
