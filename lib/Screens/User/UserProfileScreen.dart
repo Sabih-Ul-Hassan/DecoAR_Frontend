@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:decoar/APICalls/Auth.dart';
 import 'package:decoar/Classes/User.dart';
 import 'package:decoar/Providers/User.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -23,12 +25,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   late User userobj;
   late var user;
 
+  TextEditingController addressController = TextEditingController();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     userId = Provider.of<UserProvider>(context).user!.userId;
     user = Provider.of<UserProvider>(context).user!.user;
     userobj = Provider.of<UserProvider>(context).user!;
+    addressController.text = user['address'];
     fetchTransactions(userId);
   }
 
@@ -69,10 +74,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage:
-                      NetworkImage(url + "uploads/" + user['picture']),
+                GestureDetector(
+                  onTap: () async {
+                    final picker = ImagePicker();
+                    final pickedFile =
+                        await picker.pickImage(source: ImageSource.gallery);
+                    if (pickedFile != null) {
+                      final imageFile = File(pickedFile.path);
+                      try {
+                        final request = http.MultipartRequest('POST',
+                            Uri.parse('${url}user/updateProfilePicture'));
+                        request.files.add(await http.MultipartFile.fromPath(
+                            'picture', imageFile.path));
+                        request.fields['userId'] = userId;
+
+                        final response = await request.send();
+                        if (response.statusCode == 200) {
+                          final responseBody =
+                              await response.stream.bytesToString();
+                          final updatedUser = json.decode(responseBody);
+                          setState(() {
+                            user['picture'] = updatedUser['picture'];
+                            Hive.box("user").put("user", json.encode(user));
+                          });
+                        } else {
+                          throw Exception('Failed to update profile picture');
+                        }
+                      } catch (e) {
+                        print('Error: $e');
+                      }
+                    }
+                  },
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage:
+                        NetworkImage(url + "uploads/" + user['picture']),
+                  ),
                 ),
                 SizedBox(width: 20),
                 Column(
@@ -93,9 +130,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
             SizedBox(height: 20),
-            Text(
-              'Address: ${user['address']}',
-              style: TextStyle(fontSize: 16),
+            GestureDetector(
+              onTap: () {
+                _showAddressBottomSheet();
+              },
+              child: Text(
+                'Address: ${user['address']}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
             SizedBox(height: 10),
             Text(
@@ -235,5 +280,64 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ),
       ),
     );
+  }
+
+  void _showAddressBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Update Address',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  labelText: 'New Address',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _updateAddress();
+                },
+                child: Text('Submit'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updateAddress() async {
+    String newAddress = addressController.text;
+    try {
+      final response = await http.put(
+        Uri.parse('${url}user/updateAddress/$userId'),
+        body: {'address': newAddress},
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          user['address'] = newAddress;
+        });
+        Navigator.pop(context);
+      } else {
+        print('Failed to update address: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Network error: $e');
+    }
   }
 }
