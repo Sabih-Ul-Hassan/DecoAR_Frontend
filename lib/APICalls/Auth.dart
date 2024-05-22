@@ -56,8 +56,8 @@ Future<Map<String, dynamic>> login(String email, String password) async {
   }
 }
 
-Future<Map<String, dynamic>> signup(
-    String name, String email, String password) async {
+Future<Map<String, dynamic>> signup(String name, String email, String password,
+    String address, String accountNo) async {
   String fcmTokken = await NotificationsServices.getDeviceToken();
 
   final String Url = url + 'user/signup?fcmTokken=' + fcmTokken;
@@ -67,6 +67,8 @@ Future<Map<String, dynamic>> signup(
       'name': name,
       'email': email,
       'password': password,
+      "accountNo": accountNo,
+      "address": address
     });
 
     if (response.statusCode == 201) {

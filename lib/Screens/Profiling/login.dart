@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:email_validator/email_validator.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({Key? key}) : super(key: key);
@@ -24,24 +25,33 @@ class _MyLoginState extends State<MyLogin> {
     String password = _passwordController.text.trim();
 
     if (email.isNotEmpty && password.isNotEmpty) {
-      Map<String, dynamic> res = await login(email, password);
+      if (EmailValidator.validate(email)) {
+        Map<String, dynamic> res = await login(email, password);
 
-      if (!res['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Login falled'),
-          duration: Duration(seconds: 2),
-        ));
+        if (!res['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Login falled'),
+            duration: Duration(seconds: 2),
+          ));
+        } else {
+          Map<String, dynamic> u = json.decode(res['data']);
+          print(u["_id"]);
+          if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
+          Box userBox = Hive.box("user");
+
+          User user = User(userId: u["_id"], userType: "user", user: u);
+          print(user.toString());
+          userBox.put('user', user.toString());
+          Provider.of<UserProvider>(context, listen: false).user = user;
+          Navigator.pushReplacementNamed(context, "/userHome");
+        }
       } else {
-        Map<String, dynamic> u = json.decode(res['data']);
-        print(u["_id"]);
-        if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
-        Box userBox = Hive.box("user");
-
-        User user = User(userId: u["_id"], userType: "user", user: u);
-        print(user.toString());
-        userBox.put('user', user.toString());
-        Provider.of<UserProvider>(context, listen: false).user = user;
-        Navigator.pushReplacementNamed(context, "/userHome");
+        {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Email is not valid.'),
+            duration: Duration(seconds: 2),
+          ));
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
