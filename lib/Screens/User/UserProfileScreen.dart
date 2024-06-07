@@ -56,6 +56,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Future<void> reloadUser() async {
+    final String endpoint = 'user/user/${user["email"]}';
+    print(user["email"]);
+    final String url1 = '$url$endpoint';
+    try {
+      final response = await http.get(Uri.parse(url1));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> u = json.decode(response.body);
+        if (!Hive.isBoxOpen("user")) await Hive.openBox("user");
+        Box userBox = Hive.box("user");
+        User user =
+            User(userId: u["_id"], userType: this.userobj.userType, user: u);
+        userBox.put('user', user.toString());
+        Provider.of<UserProvider>(context, listen: false).user = user;
+        this.userobj = user;
+        this.user = user.user;
+        setState(() {});
+      } else {
+        print('${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error making the API call: $e');
+    }
+  }
+
   Future<void> _refresh() async {
     await fetchTransactions(userId);
   }
@@ -66,6 +92,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: reloadUser,
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(20.0),
@@ -171,24 +203,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       'Switch - ${userobj.userType == "user" ? "Seller" : "Customer"}'),
                 ),
               ),
+            if (isAdmin)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Provider.of<UserProvider>(context, listen: false)
+                            .user!
+                            .userType =
+                        userobj.userType == "admin" ? "user" : "admin";
+                    Navigator.of(context).pushReplacementNamed(
+                        userobj.userType == "user"
+                            ? "/userHome"
+                            : "/adminHome");
+                    Hive.box("user").put(
+                        'user',
+                        Provider.of<UserProvider>(context, listen: false)
+                            .user!
+                            .toString());
+                  },
+                  child: Text(
+                      'Switch - ${userobj.userType == "admin" ? "User" : "Admin"}'),
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  Provider.of<UserProvider>(context, listen: false)
-                          .user!
-                          .userType =
-                      userobj.userType == "admin" ? "user" : "admin";
-                  Navigator.of(context).pushReplacementNamed(
-                      userobj.userType == "user" ? "/userHome" : "/adminHome");
-                  Hive.box("user").put(
-                      'user',
-                      Provider.of<UserProvider>(context, listen: false)
-                          .user!
-                          .toString());
+                  _makeApiCall(user, context);
                 },
-                child: Text(
-                    'Switch - ${userobj.userType == "admin" ? "User" : "Admin"}'),
+                child: Text('Transfer balance'),
               ),
             ),
             SizedBox(
@@ -339,5 +383,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } catch (e) {
       print('Network error: $e');
     }
+  }
+}
+
+Future<void> _makeApiCall(Map<String, dynamic> user, context) async {
+  try {
+    // Define the API endpoint
+    final String apiUrl = url + 'paymentReq/payment';
+
+    Map<String, dynamic> data = {
+      'userName': user['name'],
+      'balance': user['balance'].toString(),
+      'accountNo': user['accountNo'],
+      'userId': user["_id"]
+    };
+
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      body: data,
+    );
+
+    if (response.statusCode == 201) {
+      print('Payment request added successfully');
+      final scaffold = ScaffoldMessenger.of(context);
+
+      scaffold.showSnackBar(const SnackBar(
+        content: Text('Done'),
+        duration: Duration(seconds: 1),
+      ));
+    } else {
+      final scaffold = ScaffoldMessenger.of(context);
+
+      scaffold.showSnackBar(const SnackBar(
+        content: Text('failed'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  } catch (error) {
+    print('Error making API call: $error');
   }
 }

@@ -34,6 +34,7 @@ class _SearchedUserState extends State<SearchedUser> {
   void initState() {
     super.initState();
     user = fetchUser(widget.userId);
+    print(user);
   }
 
   @override
@@ -171,6 +172,28 @@ class _SearchedUserState extends State<SearchedUser> {
                           child: Text('Delete'),
                         ),
                       ),
+                    if (Provider.of<UserProvider>(context).user!.userType ==
+                        "admin")
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await toggleAdmin(widget.userId);
+                            final scaffold = ScaffoldMessenger.of(context);
+
+                            scaffold.showSnackBar(
+                              const SnackBar(
+                                content: Text('Updated'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          child: Text(user["admin"] == false
+                              ? "Make admin"
+                              : "remove admin"),
+                        ),
+                      ),
                   ]),
             );
           }
@@ -181,10 +204,26 @@ class _SearchedUserState extends State<SearchedUser> {
 }
 
 Future<bool> deleteUserById(String UserId) async {
-  final apiUrl = url + 'admin/user/' + UserId;
+  final apiUrl = url + 'admin/toggle/' + UserId;
 
   try {
-    final response = await http.delete(Uri.parse(apiUrl));
+    final response = await http.post(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
+
+Future<bool> toggleAdmin(String UserId) async {
+  final apiUrl = url + 'admin/toggle/' + UserId;
+
+  try {
+    final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       return true;

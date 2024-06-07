@@ -5,6 +5,7 @@ import 'package:decoar/Providers/User.dart';
 import 'package:decoar/Screens/Admin/admin_home.dart';
 import 'package:decoar/Screens/Analytics/ExcelView.dart';
 import 'package:decoar/Screens/Chat/chat_screen.dart';
+import 'package:decoar/Screens/Profiling/forgot_password.dart';
 import 'package:decoar/Screens/Profiling/login.dart';
 import 'package:decoar/Screens/Profiling/signup.dart';
 import 'package:decoar/Screens/Recycke/searched_user.dart';
@@ -136,6 +137,9 @@ class _MyProviderAppState extends State<MyProviderApp> {
               return MaterialPageRoute(builder: (_) => MyRegister());
             case '/login':
               return MaterialPageRoute(builder: (_) => MyLogin());
+            case '/forgotPassword':
+              return MaterialPageRoute(
+                  builder: (_) => ForgotPasswordEmailScreen());
             case '/searchedUserAdmin':
               String id;
               id = settings.arguments as String;

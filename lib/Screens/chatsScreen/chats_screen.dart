@@ -42,6 +42,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chats'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () => {data = getAllChats(userId!)},
+          ),
+        ],
       ),
       body: FutureBuilder(
         future: data,

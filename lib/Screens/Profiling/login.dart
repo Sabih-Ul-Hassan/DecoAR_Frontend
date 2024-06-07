@@ -162,6 +162,21 @@ class _MyLoginState extends State<MyLogin> {
                                 ),
                                 style: ButtonStyle(),
                               ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/forgotPassword');
+                                },
+                                child: Text(
+                                  'Forgot Password',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Color(0xff4c505b),
+                                      fontSize: 18),
+                                ),
+                                style: ButtonStyle(),
+                              ),
                             ],
                           )
                         ],
